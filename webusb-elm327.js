@@ -14,6 +14,13 @@ const hex2ascii = (hex) => {
   }
   return str
 }
+const ascii2hex = (str) => {
+  let arr = []
+  for (let i = 0, l = str.length; i < l; i ++) {
+    arr.push(Number(str.charCodeAt(i)).toString(16).padStart(2, '0'))
+  }
+  return arr.join('')
+}
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 const vendorRead = (device, value, index, length) => {
@@ -174,7 +181,8 @@ const initEvents = () => {
   })
 
   document.querySelector('#send').addEventListener('click', async () => {
-    await send(device, hex2buf(document.querySelector('#input').value))
+    await send(device, hex2buf(ascii2hex(`${document.querySelector('#input').value}\r`)))
+    document.querySelector('#input').value = ''
   })
 }
 
