@@ -5,6 +5,7 @@ const VENDOR_WRITE_REQUEST = 0x01
 const SET_LINE_REQUEST = 0x20
 const SET_CONTROL_REQUEST = 0x22
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 const buf2hex = (buf) => Array.prototype.map.call(new Uint8Array(buf), x => ('00' + x.toString(16)).slice(-2)).join('')
 const hex2buf = (hex) => new Uint8Array(hex.match(/[\da-f]{2}/gi).map(h => parseInt(h, 16)))
 const hex2ascii = (hex) => {
@@ -16,12 +17,11 @@ const hex2ascii = (hex) => {
 }
 const ascii2hex = (str) => {
   let arr = []
-  for (let i = 0, l = str.length; i < l; i ++) {
+  for (let i = 0; i < str.length; i ++) {
     arr.push(Number(str.charCodeAt(i)).toString(16).padStart(2, '0'))
   }
   return arr.join('')
 }
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 const vendorRead = (device, value, index, length) => {
   return device.controlTransferIn({
@@ -63,42 +63,6 @@ const setControl = (device, value, index) => {
   }, new ArrayBuffer(0))
 }
 
-const setupDevice = async (device) => {
-  await vendorRead(device, 0x8484, 0x0000, 1)
-  await vendorWrite(device, 0x404, 0x0000)
-  await vendorRead(device, 0x8484, 0x0000, 1)
-  await vendorRead(device, 0x8383, 0x0000, 1)
-  await vendorRead(device, 0x8484, 0x0000, 1)
-  await vendorWrite(device, 0x404, 0x0001)
-  await vendorRead(device, 0x8484, 0x0000, 1)
-  await vendorRead(device, 0x8383, 0x0000, 1)
-  await vendorWrite(device, 0x0, 0x0001)
-  await vendorWrite(device, 0x1, 0x0000)
-  await vendorWrite(device, 0x2, 0x0044)
-  await vendorRead(device, 0x80, 0x0000, 2)
-  await vendorWrite(device, 0x0, 0x0001)
-  await setControl(device, 0x1, 0x0000)
-  await vendorRead(device, 0x80, 0x0000, 2)
-  await vendorWrite(device, 0x0, 0x0001)
-  await setControl(device, 0x3, 0x0000)
-  await vendorRead(device, 0x80, 0x0000, 2)
-  await vendorWrite(device, 0x0, 0x0001)
-  await vendorRead(device, 0x80, 0x0000, 2)
-  await vendorWrite(device, 0x0, 0x0001)
-  await vendorWrite(device, 0xB0B, 0x0002)
-  await vendorWrite(device, 0x909, 0x0000)
-  await vendorWrite(device, 0x808, 0x0000)
-  await setLine(device, 0x0, 0x0000, hex2buf('00960000000007'))
-  await setControl(device, 0x1, 0x0000)
-  await setControl(device, 0x0, 0x0000)
-  await setLine(device, 0x0, 0x0000, hex2buf('00960000000008'))
-  await vendorWrite(device, 0x505, 0x1311)
-  await setControl(device, 0x0, 0x0000)
-  await setControl(device, 0x0, 0x0000)
-  await vendorRead(device, 0x80, 0x0000, 2)
-  await vendorWrite(device, 0x0, 0x0001)
-}
-
 const send = async (device, frame) => {
   console.log(frame)
   const endpoint = device.configuration.interfaces[0].alternates[0].endpoints.find(e => e.direction === 'out' && e.type === 'bulk')
@@ -137,6 +101,39 @@ const initDevice = async () => {
   }
   await device.claimInterface(configuration.interfaces[0].interfaceNumber)
   await device.selectAlternateInterface(configuration.interfaces[0].interfaceNumber, 0)
+  await vendorRead(device, 0x8484, 0x0000, 1)
+  await vendorWrite(device, 0x404, 0x0000)
+  await vendorRead(device, 0x8484, 0x0000, 1)
+  await vendorRead(device, 0x8383, 0x0000, 1)
+  await vendorRead(device, 0x8484, 0x0000, 1)
+  await vendorWrite(device, 0x404, 0x0001)
+  await vendorRead(device, 0x8484, 0x0000, 1)
+  await vendorRead(device, 0x8383, 0x0000, 1)
+  await vendorWrite(device, 0x0, 0x0001)
+  await vendorWrite(device, 0x1, 0x0000)
+  await vendorWrite(device, 0x2, 0x0044)
+  await vendorRead(device, 0x80, 0x0000, 2)
+  await vendorWrite(device, 0x0, 0x0001)
+  await setControl(device, 0x1, 0x0000)
+  await vendorRead(device, 0x80, 0x0000, 2)
+  await vendorWrite(device, 0x0, 0x0001)
+  await setControl(device, 0x3, 0x0000)
+  await vendorRead(device, 0x80, 0x0000, 2)
+  await vendorWrite(device, 0x0, 0x0001)
+  await vendorRead(device, 0x80, 0x0000, 2)
+  await vendorWrite(device, 0x0, 0x0001)
+  await vendorWrite(device, 0xB0B, 0x0002)
+  await vendorWrite(device, 0x909, 0x0000)
+  await vendorWrite(device, 0x808, 0x0000)
+  await setLine(device, 0x0, 0x0000, hex2buf('00960000000007'))
+  await setControl(device, 0x1, 0x0000)
+  await setControl(device, 0x0, 0x0000)
+  await setLine(device, 0x0, 0x0000, hex2buf('00960000000008'))
+  await vendorWrite(device, 0x505, 0x1311)
+  await setControl(device, 0x0, 0x0000)
+  await setControl(device, 0x0, 0x0000)
+  await vendorRead(device, 0x80, 0x0000, 2)
+  await vendorWrite(device, 0x0, 0x0001)
   return device
 }
 
@@ -149,7 +146,10 @@ const initEvents = () => {
   document.querySelector('#open').addEventListener('click', async () => {
     try {
       device = await initDevice()
-      await setupDevice(device)
+      navigator.usb.addEventListener('disconnect', () => {
+        device = null
+        document.querySelector('#status').innerHTML = 'status: not connected'
+      })
       document.querySelector('#status').innerHTML = `status: connected (${device.productName})`
       let frame = []
       readLoop(device, 256, (chunk) => {
@@ -183,6 +183,12 @@ const initEvents = () => {
   document.querySelector('#send').addEventListener('click', async () => {
     await send(device, hex2buf(ascii2hex(`${document.querySelector('#input').value}\r`)))
     document.querySelector('#input').value = ''
+  })
+
+  document.querySelector('#input').addEventListener('keyup', (event) => {
+    if (event.which === 13) {
+      document.querySelector('#send').click()
+    }
   })
 }
 
