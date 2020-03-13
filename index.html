@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>webusb-elm327 - WebUSB implementation for USB ELM327 devices</title>
+  </head>
+
+  <body>
+    <div>
+      <span id="status">status: not connected</span>
+      <button id="open">open</button>
+      <button id="close">close</button>
+    </div>
+
+    <hr>
+
+    <div>
+      <input type="text" id="input">
+      <button id="send">send</button>
+    </div>
+
+    <hr>
+
+    <textarea id="logs" cols="160" rows="50" disabled></textarea>
+
+    <script type="text/javascript" src="webusb-elm327.js"></script>
+  </body>
+</html>
